@@ -199,17 +199,6 @@ export function PaginaDisciplinas() {
         </div>
       )}
 
-      {/* Instruções */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2">Dicas sobre Disciplinas:</h4>
-        <ul className="text-sm text-gray-600 space-y-1">
-          <li>• Cada disciplina tem uma cor única para identificação visual na grade</li>
-          <li>• Ao remover uma disciplina, todos os professores e horários associados serão removidos</li>
-          <li>• Use cores contrastantes para facilitar a identificação na grade de horários</li>
-          <li>• É recomendado ter pelo menos um professor para cada disciplina ativa</li>
-        </ul>
-      </div>
-
       {/* Modal */}
       {modalAberto && (
         <ModalDisciplina
