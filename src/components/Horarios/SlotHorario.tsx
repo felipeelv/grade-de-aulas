@@ -36,7 +36,7 @@ export function SlotHorario({
     transform,
     isDragging,
   } = useDraggable({
-    id: horario?.id || '',
+    id: horario?.id?.toString() || `empty-${dia}-${aula}`,
     disabled: !horario || !modoEdicao,
   });
 
@@ -46,7 +46,18 @@ export function SlotHorario({
       }
     : undefined;
 
-  // Se não há horário, mostrar slot vazio
+  // Obter dados da disciplina e professor (ANTES do return condicional)
+  const disciplina = horario ? obterDisciplinaPorId(horario.disciplinaId) : null;
+  const professor = horario ? obterProfessorPorId(horario.professorId) : null;
+
+  const handleRemover = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (horario && window.confirm('Tem certeza que deseja remover este horário?')) {
+      removerHorario(horario.id);
+    }
+  };
+
+  // Se não há horário, mostrar slot vazio (APÓS os hooks)
   if (!horario) {
     return (
       <div
@@ -73,17 +84,6 @@ export function SlotHorario({
       </div>
     );
   }
-
-  // Obter dados da disciplina e professor
-  const disciplina = obterDisciplinaPorId(horario.disciplinaId);
-  const professor = obterProfessorPorId(horario.professorId);
-
-  const handleRemover = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm('Tem certeza que deseja remover este horário?')) {
-      removerHorario(horario.id);
-    }
-  };
 
   return (
     <div

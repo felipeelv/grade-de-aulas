@@ -37,7 +37,7 @@ export function SlotHorarioMelhorado({
     transform,
     isDragging,
   } = useDraggable({
-    id: horario?.id.toString() || '',
+    id: horario?.id?.toString() || `empty-${dia}-${aula}`,
     disabled: !horario || !modoEdicao,
     data: {
       horario,
@@ -52,7 +52,32 @@ export function SlotHorarioMelhorado({
       }
     : undefined;
 
-  // Se não há horário, mostrar slot vazio
+  // Obter dados da disciplina e professor (ANTES do return condicional)
+  const disciplina = horario ? obterDisciplinaPorId(horario.disciplinaId) : null;
+  const professor = horario ? obterProfessorPorId(horario.professorId) : null;
+
+  const handleRemover = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (horario && window.confirm(`Tem certeza que deseja remover a aula de ${disciplina?.nome || 'Disciplina'} com ${professor?.nome || 'Professor'}?`)) {
+      removerHorario(horario.id);
+    }
+  };
+
+  // Determinar estilo baseado no estado
+  const getSlotStyle = () => {
+    if (isDragging) {
+      return 'opacity-50';
+    }
+    if (conflito) {
+      return 'border-red-500 border-2 shadow-lg';
+    }
+    if (isOver && modoEdicao) {
+      return 'border-blue-400 border-2 shadow-lg';
+    }
+    return 'border-transparent';
+  };
+
+  // Se não há horário, mostrar slot vazio (APÓS todos os hooks)
   if (!horario) {
     return (
       <div
@@ -64,7 +89,7 @@ export function SlotHorarioMelhorado({
           flex items-center justify-center transition-all duration-300
           ${
             isOver
-              ? 'bg-blue-100 border-blue-400 border-dashed border-2 shadow-lg scale-105'
+              ? 'bg-blue-100 border-blue-400 border-dashed border-2'
               : isHovering && modoEdicao
               ? 'bg-gray-100 border-gray-300 shadow-md'
               : 'bg-gray-50/50 hover:bg-gray-100/50'
@@ -110,34 +135,6 @@ export function SlotHorarioMelhorado({
     );
   }
 
-  // Obter dados da disciplina e professor
-  const disciplina = obterDisciplinaPorId(horario.disciplinaId);
-  const professor = obterProfessorPorId(horario.professorId);
-
-  const handleRemover = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm(`Tem certeza que deseja remover a aula de ${disciplina?.nome || 'Disciplina'} com ${professor?.nome || 'Professor'}?`)) {
-      removerHorario(horario.id);
-    }
-  };
-
-  // Determinar estilo baseado no estado
-  const getSlotStyle = () => {
-    if (isDragging) {
-      return 'opacity-50 shadow-2xl scale-105 rotate-2';
-    }
-    if (conflito) {
-      return 'border-red-500 border-2 shadow-lg animate-pulse';
-    }
-    if (isOver && modoEdicao) {
-      return 'border-blue-400 border-2 shadow-lg scale-105';
-    }
-    if (isHovering && modoEdicao) {
-      return 'border-gray-400 shadow-md scale-102';
-    }
-    return 'border-gray-200 hover:shadow-sm';
-  };
-
   return (
     <div
       ref={(node) => {
@@ -154,7 +151,7 @@ export function SlotHorarioMelhorado({
         relative min-h-[80px] p-3 text-white rounded-lg
         transition-all duration-200 cursor-pointer
         ${getSlotStyle()}
-        ${modoEdicao && !isDragging ? 'hover:shadow-lg' : ''}
+        
       `}
       {...attributes}
       {...listeners}
@@ -183,47 +180,16 @@ export function SlotHorarioMelhorado({
       )}
 
       {/* Conteúdo do slot */}
-      <div className="space-y-2">
-        {/* Nome da disciplina */}
-        <div className="font-semibold text-sm leading-tight">
-          <BookOpen className="h-3 w-3 inline mr-1" />
+      <div className="flex flex-col items-center justify-center text-center h-full">
+        <div className="font-bold text-base leading-tight truncate w-full">
           {disciplina?.nome || 'Disciplina'}
         </div>
-        
-        {/* Nome do professor */}
-        <div className="text-xs opacity-90 leading-tight">
-          <User className="h-3 w-3 inline mr-1" />
+        <div className="text-xs opacity-80 leading-tight truncate w-full mt-1">
           {professor?.nome || 'Professor'}
         </div>
-
-        {/* Informações adicionais no hover */}
-        {isHovering && !isDragging && (
-          <div className="text-xs opacity-75 border-t border-white/20 pt-1 mt-2">
-            <div>Dia: {['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'][dia]}</div>
-            <div>Aula: {aula}ª</div>
-          </div>
-        )}
       </div>
 
-      {/* Indicador de drag (modo edição) */}
-      {modoEdicao && !isDragging && (
-        <div className="absolute bottom-1 right-1 text-white/60">
-          <div className="flex space-x-0.5">
-            <div className="w-1 h-1 bg-current rounded-full"></div>
-            <div className="w-1 h-1 bg-current rounded-full"></div>
-            <div className="w-1 h-1 bg-current rounded-full"></div>
-          </div>
-        </div>
-      )}
 
-      {/* Overlay de dragging */}
-      {isDragging && (
-        <div className="absolute inset-0 bg-blue-500/20 rounded-lg flex items-center justify-center">
-          <div className="text-white font-medium text-sm">
-            Movendo...
-          </div>
-        </div>
-      )}
     </div>
   );
 }

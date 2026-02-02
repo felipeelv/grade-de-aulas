@@ -101,21 +101,17 @@ export function GradeProfessor({ professor, horarios, turmas, disciplinas }: Gra
                         {horario && turma && disciplina ? (
                           <div className="relative">
                             <div 
-                              className="rounded-lg p-3 text-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex flex-col items-center justify-center text-center"
+                              className="rounded-lg p-3 text-white shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center min-h-[70px]"
                               style={{ backgroundColor: disciplina.cor }}
                             >
-                              {/* Turma (maior) */}
-                              <div className="font-bold text-base mb-1 drop-shadow-sm">
-                                {turma.ano}{turma.turma}
-                              </div>
-                              {/* Segmento (menor) */}
-                              <div className="text-xs opacity-90 mb-1">
+                              {/* Turma (destaque principal) */}
+                              <div className="font-bold text-lg drop-shadow-sm">
                                 {turma.segmento === 'Ensino Fundamental I' ? 'Fund I' :
                                  turma.segmento === 'Ensino Fundamental II' ? 'Fund II' :
-                                 turma.segmento === 'Ensino Médio' ? 'EM' : turma.segmento}
+                                 turma.segmento === 'Ensino Médio' ? 'EM' : turma.segmento} {turma.ano}{turma.turma}
                               </div>
                               {/* Disciplina (menor) */}
-                              <div className="text-xs opacity-90 font-medium">
+                              <div className="text-xs opacity-80 mt-1">
                                 {disciplina.nome}
                               </div>
                             </div>

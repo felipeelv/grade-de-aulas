@@ -34,38 +34,10 @@ export function GradeHorariosMelhorada({
   const [nomeHorarioRemovido, setNomeHorarioRemovido] = useState('');
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
 
-  // Se não há turma selecionada, mostrar mensagem amigável
-  if (!turmaSelecionada) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
-        <div className="text-center max-w-md mx-auto">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-4 8h.01M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V9a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">
-            Selecione uma turma
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Escolha uma turma nos filtros acima para visualizar e editar sua grade de horários. 
-            Você poderá arrastar e soltar horários, adicionar novos e visualizar conflitos.
-          </p>
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Dica:</strong> Use os filtros para ver grades específicas ou 
-              selecione um professor para ver todas as suas aulas.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Memoizar horários da turma para otimização
+  // Memoizar horários da turma para otimização (ANTES do return condicional)
   const horariosDoTurma = useMemo(() => 
-    horarios.filter(h => h.turmaId === turmaSelecionada.id),
-    [horarios, turmaSelecionada.id]
+    turmaSelecionada ? horarios.filter(h => h.turmaId === turmaSelecionada.id) : [],
+    [horarios, turmaSelecionada]
   );
 
   // Função otimizada para obter horário de um slot específico
@@ -174,6 +146,34 @@ export function GradeHorariosMelhorada({
     const slotId = `${dia}-${aula}`;
     return dragOverSlot === slotId;
   }, [horarioArrastado, dragOverSlot]);
+
+  // Se não há turma selecionada, mostrar mensagem amigável (APÓS todos os hooks)
+  if (!turmaSelecionada) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-4 8h.01M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V9a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            Selecione uma turma
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Escolha uma turma nos filtros acima para visualizar e editar sua grade de horários. 
+            Você poderá arrastar e soltar horários, adicionar novos e visualizar conflitos.
+          </p>
+          <div className="bg-blue-50 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              💡 <strong>Dica:</strong> Use os filtros para ver grades específicas ou 
+              selecione um professor para ver todas as suas aulas.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -491,6 +491,27 @@ export class SupabaseService {
     }
   }
 
+  // ========== TESTE DE CONEXÃO ==========
+  static async testarConexao(): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('disciplinas')
+        .select('id')
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Erro ao testar conexão:', error);
+        return false;
+      }
+
+      console.log('✅ Conexão com Supabase estabelecida');
+      return true;
+    } catch (error) {
+      console.error('❌ Falha na conexão com Supabase:', error);
+      return false;
+    }
+  }
+
   // ========== MIGRAÇÃO DO LOCALSTORAGE ==========
   static async migrarDadosLocalStorage(): Promise<boolean> {
     try {
