@@ -19,7 +19,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Verificar conexão
 export const verificarConexao = async () => {
   try {
-    const { data, error } = await supabase.from('disciplinas').select('count(*)');
+    const { data, error } = await supabase.from('disciplinas').select('id').limit(1);
     if (error) {
       console.error('Erro na conexão com Supabase:', error);
       return false;
