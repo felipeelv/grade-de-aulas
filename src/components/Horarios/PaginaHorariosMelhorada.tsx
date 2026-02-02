@@ -366,52 +366,6 @@ export function PaginaHorariosMelhorada() {
           onFechar={handleFecharModal}
         />
       )}
-
-      {/* Instruções detalhadas */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-        <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-          <BookOpen className="h-5 w-5 mr-2 text-gray-600" />
-          Guia de Uso do Sistema
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h5 className="font-medium text-gray-800 mb-2">Navegação e Filtros</h5>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Selecione uma turma para visualizar sua grade de horários</li>
-              <li>• Use o filtro de professor para ver apenas as aulas específicas</li>
-              <li>• <strong>Dica especial:</strong> Selecione apenas um professor para ver sua grade completa</li>
-              <li>• Use "Limpar filtros" para remover todas as seleções</li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-medium text-gray-800 mb-2">Modo Edição</h5>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Ative o "Modo Edição" para modificar horários</li>
-              <li>• <strong>Drag & Drop:</strong> Arraste horários entre slots</li>
-              <li>• <strong>Lixeira inteligente:</strong> Arraste para a lixeira para remover</li>
-              <li>• Clique em "+" em slots vazios para adicionar novos horários</li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-medium text-gray-800 mb-2">Validação e Conflitos</h5>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Conflitos são detectados automaticamente em tempo real</li>
-              <li>• Horários com conflitos aparecem com borda vermelha pulsante</li>
-              <li>• Use o botão "Ver Conflitos" para detalhes e sugestões</li>
-              <li>• Validação visual durante drag & drop</li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-medium text-gray-800 mb-2">Recursos Avançados</h5>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Imprima grades individuais ou por professor</li>
-              <li>• Estatísticas em tempo real de ocupação</li>
-              <li>• Feedback visual em todas as interações</li>
-              <li>• Sistema responsivo para todos os dispositivos</li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
