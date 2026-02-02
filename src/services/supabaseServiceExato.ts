@@ -554,15 +554,15 @@ export class SupabaseServiceExato {
     try {
       const { data, error } = await supabase
         .from('disciplinas')
-        .select('count(*)')
-        .single();
+        .select('id')
+        .limit(1);
 
       if (error) {
         console.error('Erro na conexão:', error);
         return false;
       }
 
-      console.log('✅ Conexão com Supabase funcionando!', data);
+      console.log('✅ Conexão com Supabase funcionando!');
       return true;
     } catch (error) {
       console.error('Erro no teste de conexão:', error);

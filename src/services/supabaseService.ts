@@ -500,7 +500,7 @@ export class SupabaseService {
         .limit(1);
 
       if (error) {
-        console.error('❌ Erro ao testar conexão:', error);
+        console.error('❌ Erro ao testar conexão:', error.message || error);
         return false;
       }
 
