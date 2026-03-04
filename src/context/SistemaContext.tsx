@@ -5,6 +5,7 @@ import { SupabaseServiceExato as SupabaseService } from '../services/supabaseSer
 import { ConflitosService } from '../services/conflitosService';
 import { useNotificacao } from '../components/Notificacoes/NotificacaoProvider';
 import { supabase } from '../lib/supabase';
+import { ImportPlanilhaService, DadosImportados } from '../services/importPlanilhaService';
 
 type AcaoSistema =
   | { tipo: 'CARREGAR_DADOS'; payload: EstadoSistema }
@@ -21,6 +22,7 @@ type AcaoSistema =
   | { tipo: 'ATUALIZAR_HORARIO'; payload: Horario }
   | { tipo: 'REMOVER_HORARIO'; payload: number }
   | { tipo: 'MOVER_HORARIO'; payload: { horarioId: number; novoDia: number; novaAula: number } }
+  | { tipo: 'IMPORTAR_DADOS_MASSA'; payload: { disciplinas: Disciplina[]; professores: Professor[]; turmas: Turma[]; horarios: Horario[] } }
   | { tipo: 'ATUALIZAR_CONFLITOS' };
 
 interface ContextoSistema {
@@ -46,6 +48,7 @@ interface ContextoSistema {
   obterDisciplinaPorId: (id: number) => Disciplina | undefined;
   obterProfessorPorId: (id: number) => Professor | undefined;
   obterTurmaPorId: (id: number) => Turma | undefined;
+  importarPlanilha: (dados: DadosImportados) => Promise<{ sucesso: boolean; horariosImportados: number; erros: string[] }>;
 }
 
 const SistemaContext = createContext<ContextoSistema | undefined>(undefined);
@@ -149,6 +152,17 @@ function sistemaReducer(estado: EstadoSistema, acao: AcaoSistema): EstadoSistema
       };
     }
     
+    case 'IMPORTAR_DADOS_MASSA': {
+      const { disciplinas: novasDisciplinas, professores: novosProfessores, turmas: novasTurmas, horarios: novosHorarios } = acao.payload;
+      return {
+        ...estado,
+        disciplinas: [...estado.disciplinas, ...novasDisciplinas],
+        professores: [...estado.professores, ...novosProfessores],
+        turmas: [...estado.turmas, ...novasTurmas],
+        horarios: [...estado.horarios, ...novosHorarios],
+      };
+    }
+
     case 'ATUALIZAR_CONFLITOS': {
       const conflitos = ConflitosService.detectarConflitos(
         estado.horarios,
@@ -449,6 +463,85 @@ export function SistemaProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const importarPlanilha = async (dados: DadosImportados): Promise<{ sucesso: boolean; horariosImportados: number; erros: string[] }> => {
+    const erros: string[] = [];
+
+    // 1. Criar disciplinas novas
+    const disciplinasCriadas: Disciplina[] = [];
+    for (const disc of dados.disciplinas) {
+      if (conectado) {
+        const nova = await SupabaseService.adicionarDisciplina(disc);
+        if (nova) disciplinasCriadas.push(nova);
+        else erros.push(`Erro ao criar disciplina: ${disc.nome}`);
+      } else {
+        const nova: Disciplina = { ...disc, id: gerarProximoId([...estado.disciplinas, ...disciplinasCriadas]) };
+        disciplinasCriadas.push(nova);
+      }
+    }
+
+    // 2. Criar professores novos
+    const professoresCriados: Professor[] = [];
+    for (const prof of dados.professores) {
+      if (conectado) {
+        const novo = await SupabaseService.adicionarProfessor(prof);
+        if (novo) professoresCriados.push(novo);
+        else erros.push(`Erro ao criar professor: ${prof.nome}`);
+      } else {
+        const novo: Professor = { ...prof, id: gerarProximoId([...estado.professores, ...professoresCriados]) };
+        professoresCriados.push(novo);
+      }
+    }
+
+    // 3. Criar turmas novas
+    const turmasCriadas: Turma[] = [];
+    for (const turma of dados.turmas) {
+      if (conectado) {
+        const nova = await SupabaseService.adicionarTurma(turma);
+        if (nova) turmasCriadas.push(nova);
+        else erros.push(`Erro ao criar turma: ${turma.nome}`);
+      } else {
+        const nova: Turma = { ...turma, id: gerarProximoId([...estado.turmas, ...turmasCriadas]) };
+        turmasCriadas.push(nova);
+      }
+    }
+
+    // 4. Resolver IDs e criar horários
+    const todasDisciplinas = [...estado.disciplinas, ...disciplinasCriadas];
+    const todosProfessores = [...estado.professores, ...professoresCriados];
+    const todasTurmas = [...estado.turmas, ...turmasCriadas];
+
+    const horariosResolvidos = ImportPlanilhaService.resolverIds(dados, todasDisciplinas, todosProfessores, todasTurmas);
+
+    const horariosCriados: Horario[] = [];
+    for (const horario of horariosResolvidos) {
+      if (conectado) {
+        const novo = await SupabaseService.adicionarHorario(horario);
+        if (novo) horariosCriados.push(novo);
+        else erros.push(`Erro ao criar horário: dia ${horario.diaSemana}, aula ${horario.aula}`);
+      } else {
+        const novo: Horario = { ...horario, id: gerarProximoId([...estado.horarios, ...horariosCriados]) };
+        horariosCriados.push(novo);
+      }
+    }
+
+    // 5. Dispatch em massa para atualizar o estado
+    dispatch({
+      tipo: 'IMPORTAR_DADOS_MASSA',
+      payload: {
+        disciplinas: disciplinasCriadas,
+        professores: professoresCriados,
+        turmas: turmasCriadas,
+        horarios: horariosCriados,
+      }
+    });
+
+    return {
+      sucesso: erros.length === 0,
+      horariosImportados: horariosCriados.length,
+      erros,
+    };
+  };
+
   const validarHorario = (horario: Omit<Horario, 'id'>) => {
     return ConflitosService.validarHorario(horario, estado.horarios);
   };
@@ -486,7 +579,8 @@ export function SistemaProvider({ children }: { children: ReactNode }) {
     validarHorario,
     obterDisciplinaPorId,
     obterProfessorPorId,
-    obterTurmaPorId
+    obterTurmaPorId,
+    importarPlanilha
   };
 
   return (

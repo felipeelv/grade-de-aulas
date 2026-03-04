@@ -5,7 +5,8 @@ import { GradeHorariosMelhorada } from './GradeHorariosMelhorada';
 import { GradeProfessor } from './GradeProfessor';
 import { ModalAdicionarHorario } from './ModalAdicionarHorario';
 import { ValidadorConflitos } from './ValidadorConflitos';
-import { Edit3, Save, X, Printer, AlertTriangle, Users, Calendar, BookOpen } from 'lucide-react';
+import { Edit3, Save, X, Printer, AlertTriangle, Users, Calendar, BookOpen, Upload } from 'lucide-react';
+import { ModalImportarPlanilha } from '../Importacao/ModalImportarPlanilha';
 
 export function PaginaHorariosMelhorada() {
   const { estado } = useSistema();
@@ -19,6 +20,7 @@ export function PaginaHorariosMelhorada() {
     aula: number;
   } | null>(null);
   const [mostrarValidador, setMostrarValidador] = useState(false);
+  const [mostrarImportacao, setMostrarImportacao] = useState(false);
 
   // Memoizar horários filtrados para otimização
   const horariosFiltrados = useMemo(() => {
@@ -223,6 +225,16 @@ export function PaginaHorariosMelhorada() {
                 </button>
               )}
               
+              {/* Botão de importar planilha */}
+              <button
+                onClick={() => setMostrarImportacao(true)}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 bg-green-600 text-white hover:bg-green-700"
+                title="Importar grade de horarios via planilha"
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:block">Importar Planilha</span>
+              </button>
+
               {/* Botão de imprimir */}
               <button
                 onClick={handleImprimir}
@@ -365,6 +377,11 @@ export function PaginaHorariosMelhorada() {
           aula={slotSelecionado.aula}
           onFechar={handleFecharModal}
         />
+      )}
+
+      {/* Modal de importação de planilha */}
+      {mostrarImportacao && (
+        <ModalImportarPlanilha onFechar={() => setMostrarImportacao(false)} />
       )}
     </div>
   );
